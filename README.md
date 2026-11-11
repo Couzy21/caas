@@ -195,3 +195,7 @@ The backend is hosted by you. Developer integrations use per-organisation scoped
 - [Paystack webhook signatures and retries](https://paystack.com/docs/payments/webhooks/)
 
 See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for verification evidence and known limitations.
+
+## Current workspace review
+
+The verified local Compose demo is running at http://localhost:8000/api/v1/docs/. A seeded public widget example is available at http://localhost:8000/widget-example/?bot=3073bddd-720d-4e11-8a84-075d2e825309. The demo login is `demo`; if you did not save the seed command's random password, reset it with `docker compose run --rm web python manage.py changepassword demo`. Local credentials and data are ignored by Git and excluded from the Docker build context.

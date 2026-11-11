@@ -36,3 +36,17 @@ Before public traffic, configure TLS/trusted ingress, exact origins/hosts, priva
 ## Verification
 
 See the final verification entries below. Automated provider/payment tests use mocks; PostgreSQL tests use local infrastructure and synthetic vectors. No external charges, public deployment, marketplace publication or remote push occurred.
+
+Verified locally:
+
+- Docker image built successfully with pinned Python dependencies; `pip check` reported no broken requirements.
+- Migrations applied successfully to SQLite and PostgreSQL 16 with pgvector. `makemigrations --check --dry-run`: no changes.
+- 42 automated tests passed against PostgreSQL, with no skips. This includes two real concurrent row-lock tests and a real pgvector query with synthetic embeddings.
+- SQLite demo suite: 42 tests, 39 passed and three PostgreSQL-only tests explicitly skipped.
+- Django system checks passed. Production `check --deploy --fail-level WARNING` passed with placeholder provider settings and no provider calls.
+- Production startup with missing provider configuration failed closed as intended.
+- OpenAPI generated and validated with `--validate --fail-on-warn`, with no warnings.
+- Real HTTP smoke journey passed against gunicorn + PostgreSQL + Redis + an actual asynchronous Celery worker: registration, source processing, demo answers/citations, idempotency, scoped keys, cross-tenant denial, usage and visitor chat.
+- Widget JavaScript passed Node syntax checks; iframe HTML, Referer/CSP and visitor APIs were tested. Visual browser interaction could not run because the computer-use environment had no available browser.
+
+The local Compose web/worker/beat/database/Redis services were left running for review. Demo Swagger is at http://localhost:8000/api/v1/docs/. Stop them with `docker compose stop` when finished. No public deployment or remote push was performed.
