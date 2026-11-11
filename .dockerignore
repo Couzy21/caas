@@ -1,0 +1,9 @@
+.git
+.venv
+.env
+*.sqlite3
+__pycache__
+private_uploads
+staticfiles
+.pgdata
+.test-uploads

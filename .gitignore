@@ -1,0 +1,12 @@
+.venv/
+.env
+__pycache__/
+*.py[cod]
+*.sqlite3
+private_uploads/
+staticfiles/
+.pytest_cache/
+.DS_Store
+.pgdata/
+
+.test-uploads/

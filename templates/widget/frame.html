@@ -1,0 +1,5 @@
+{% load static %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ bot.name }}</title><link rel="stylesheet" href="{% static 'widget/widget.css' %}"></head>
+<body data-bot="{{ bot.id }}" data-origin="{{ origin }}"><header><h1>{{ bot.name }}</h1><p>Ask about this business. Avoid sharing sensitive information.</p></header>
+<main id="messages" aria-live="polite"></main><form id="chat"><label for="question">Your message</label><input id="question" maxlength="2000" required autocomplete="off"><button id="send">Send</button></form>
+<script src="{% static 'widget/frame.js' %}" defer></script></body></html>

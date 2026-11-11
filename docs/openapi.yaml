@@ -1,0 +1,1686 @@
+openapi: 3.0.3
+info:
+  title: CAAS API
+  version: 1.0.0
+  description: Tenant-isolated business chat. Paid plans are manual-renewal 30-day
+    purchases.
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResultEnvelope'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResultEnvelope'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResultEnvelope'
+          description: ''
+  /api/v1/billing/checkout/:
+    post:
+      operationId: billing_checkout_create
+      tags:
+      - billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResultEnvelope'
+          description: ''
+  /api/v1/billing/paystack/webhook/:
+    post:
+      operationId: billing_paystack_webhook_create
+      description: Raw JSON signed by Paystack-Signature (or explicitly enabled legacy
+        x-paystack-signature). Persist then verify asynchronously.
+      tags:
+      - billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyEnvelope'
+          description: ''
+  /api/v1/bots/:
+    get:
+      operationId: bots_list
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Rows per page, default 20, maximum 100.
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotPage'
+          description: ''
+    post:
+      operationId: bots_create
+      tags:
+      - bots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BotRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BotRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BotRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotEnvelope'
+          description: ''
+  /api/v1/bots/{bot_id}/:
+    get:
+      operationId: bots_retrieve
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotEnvelope'
+          description: ''
+    patch:
+      operationId: bots_partial_update
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBotRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBotRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBotRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotEnvelope'
+          description: ''
+    delete:
+      operationId: bots_destroy
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bots/{bot_id}/chat/:
+    post:
+      operationId: bots_chat_create
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        schema:
+          type: string
+        description: Unique per principal, at most 100 characters. Replays never call
+          the provider again.
+        required: true
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+        required: true
+      security:
+      - ServerAPIKey: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResultEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResultEnvelope'
+          description: ''
+  /api/v1/bots/{bot_id}/sources/:
+    get:
+      operationId: sources_list
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Rows per page, default 20, maximum 100.
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcePage'
+          description: ''
+    post:
+      operationId: bots_sources_create
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SourceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SourceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEnvelope'
+          description: ''
+  /api/v1/bots/{bot_id}/sources/{source_id}/:
+    get:
+      operationId: bots_sources_retrieve
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEnvelope'
+          description: ''
+    patch:
+      operationId: bots_sources_partial_update
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSourceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSourceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSourceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEnvelope'
+          description: ''
+    delete:
+      operationId: bots_sources_destroy
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bots
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/conversations/:
+    get:
+      operationId: conversations_list
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Rows per page, default 20, maximum 100.
+      tags:
+      - conversations
+      security:
+      - ServerAPIKey: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationPage'
+          description: ''
+  /api/v1/conversations/{conversation_id}/:
+    get:
+      operationId: conversations_retrieve
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conversations
+      security:
+      - ServerAPIKey: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetailEnvelope'
+          description: ''
+  /api/v1/health/live/:
+    get:
+      operationId: health_live_retrieve
+      tags:
+      - health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthEnvelope'
+          description: ''
+  /api/v1/health/ready/:
+    get:
+      operationId: health_ready_retrieve
+      tags:
+      - health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyEnvelope'
+          description: ''
+  /api/v1/keys/:
+    get:
+      operationId: keys_retrieve
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Rows per page, default 20, maximum 100.
+      tags:
+      - keys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyPage'
+          description: ''
+    post:
+      operationId: keys_create
+      tags:
+      - keys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KeyCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KeyCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyIssuedEnvelope'
+          description: ''
+  /api/v1/keys/{key_id}/revoke/:
+    post:
+      operationId: keys_revoke_create
+      parameters:
+      - in: path
+        name: key_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - keys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyEnvelope'
+          description: ''
+  /api/v1/keys/{key_id}/rotate/:
+    post:
+      operationId: keys_rotate_create
+      parameters:
+      - in: path
+        name: key_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - keys
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyIssuedEnvelope'
+          description: ''
+  /api/v1/me/:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+          description: ''
+  /api/v1/organisation/:
+    get:
+      operationId: organisation_retrieve
+      tags:
+      - organisation
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationEnvelope'
+          description: ''
+  /api/v1/plans/:
+    get:
+      operationId: plans_retrieve
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Rows per page, default 20, maximum 100.
+      tags:
+      - plans
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanPage'
+          description: ''
+  /api/v1/usage/:
+    get:
+      operationId: usage_retrieve
+      tags:
+      - usage
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageEnvelope'
+          description: ''
+  /api/v1/widget/{bot_id}/chat/:
+    post:
+      operationId: widget_chat_create
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        schema:
+          type: string
+        description: Unique per principal, at most 100 characters. Replays never call
+          the provider again.
+        required: true
+      - in: header
+        name: X-Visitor-Token
+        schema:
+          type: string
+        required: true
+      - in: header
+        name: X-Website-Origin
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - widget
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResultEnvelope'
+          description: ''
+  /api/v1/widget/{bot_id}/session/:
+    post:
+      operationId: widget_session_create
+      parameters:
+      - in: path
+        name: bot_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - widget
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitorCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VisitorCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VisitorCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitorResultEnvelope'
+          description: ''
+components:
+  schemas:
+    Bot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        allowed_origins: {}
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+    BotEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/Bot'
+          nullable: true
+      required:
+      - data
+      - message
+    BotPage:
+      type: object
+      properties:
+        message:
+          type: string
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bot'
+      required:
+      - count
+      - message
+      - next
+      - previous
+      - results
+    BotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        allowed_origins: {}
+        active:
+          type: boolean
+      required:
+      - name
+    ChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        conversation_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - message
+    ChatResult:
+      type: object
+      properties:
+        answer:
+          type: string
+        conversation_id:
+          type: string
+          format: uuid
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+        usage:
+          $ref: '#/components/schemas/ChatUsage'
+      required:
+      - answer
+      - conversation_id
+      - sources
+      - usage
+    ChatResultEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ChatResult'
+          nullable: true
+      required:
+      - data
+      - message
+    ChatUsage:
+      type: object
+      properties:
+        billable_answer:
+          type: boolean
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        cost_microusd:
+          type: integer
+        cost_is_upper_bound:
+          type: boolean
+        mode:
+          $ref: '#/components/schemas/ModeEnum'
+      required:
+      - billable_answer
+      - cost_is_upper_bound
+      - cost_microusd
+      - input_tokens
+      - mode
+      - output_tokens
+    CheckoutRequest:
+      type: object
+      properties:
+        plan:
+          type: string
+          minLength: 1
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - plan
+    CheckoutResult:
+      type: object
+      properties:
+        reference:
+          type: string
+        authorization_url:
+          type: string
+          format: uri
+        billing_mode:
+          type: string
+      required:
+      - authorization_url
+      - billing_mode
+      - reference
+    CheckoutResultEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CheckoutResult'
+          nullable: true
+      required:
+      - data
+      - message
+    Citation:
+      type: object
+      properties:
+        source_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        chunk:
+          type: integer
+      required:
+      - chunk
+      - source_id
+      - title
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        bot_id:
+          type: string
+          format: uuid
+          readOnly: true
+        principal:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bot_id
+      - created_at
+      - id
+      - principal
+    ConversationDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        bot_id:
+          type: string
+          format: uuid
+          readOnly: true
+        principal:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+      required:
+      - bot_id
+      - created_at
+      - id
+      - messages
+      - principal
+    ConversationDetailEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ConversationDetail'
+          nullable: true
+      required:
+      - data
+      - message
+    ConversationPage:
+      type: object
+      properties:
+        message:
+          type: string
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+      required:
+      - count
+      - message
+      - next
+      - previous
+      - results
+    EmptyEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    Health:
+      type: object
+      properties:
+        mode:
+          type: string
+      required:
+      - mode
+    HealthEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/Health'
+          nullable: true
+      required:
+      - data
+      - message
+    Key:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        bot_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        prefix:
+          type: string
+          maxLength: 20
+        scopes: {}
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bot_id
+      - created_at
+      - id
+      - name
+      - prefix
+    KeyCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        bot_id:
+          type: string
+          format: uuid
+          nullable: true
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopesEnum'
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - name
+      - scopes
+    KeyIssued:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/Key'
+        secret:
+          type: string
+      required:
+      - key
+      - secret
+    KeyIssuedEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/KeyIssued'
+          nullable: true
+      required:
+      - data
+      - message
+    KeyPage:
+      type: object
+      properties:
+        message:
+          type: string
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Key'
+      required:
+      - count
+      - message
+      - next
+      - previous
+      - results
+    KindEnum:
+      enum:
+      - faq
+      - text
+      - pdf
+      type: string
+      description: |-
+        * `faq` - faq
+        * `text` - text
+        * `pdf` - pdf
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        role:
+          type: string
+          maxLength: 10
+        content:
+          type: string
+        citations: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - content
+      - created_at
+      - id
+      - role
+    ModeEnum:
+      enum:
+      - local-demo-no-ai
+      - live-provider
+      type: string
+      description: |-
+        * `local-demo-no-ai` - local-demo-no-ai
+        * `live-provider` - live-provider
+    Organisation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          type: string
+      required:
+      - id
+      - name
+      - role
+    OrganisationEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/Organisation'
+          nullable: true
+      required:
+      - data
+      - message
+    PatchedBotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        allowed_origins: {}
+        active:
+          type: boolean
+    PatchedSourceRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        text:
+          type: string
+          maxLength: 100000
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+    Plan:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 60
+        price_kobo:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        bot_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        answer_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        spend_limit_microusd:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - answer_limit
+      - bot_limit
+      - name
+      - price_kobo
+      - slug
+    PlanPage:
+      type: object
+      properties:
+        message:
+          type: string
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+      required:
+      - count
+      - message
+      - next
+      - previous
+      - results
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        organisation_name:
+          type: string
+          minLength: 1
+          maxLength: 160
+      required:
+      - email
+      - organisation_name
+      - password
+      - username
+    RegisterResult:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        organisation:
+          $ref: '#/components/schemas/Organisation'
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - organisation
+      - refresh
+      - user
+    RegisterResultEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RegisterResult'
+          nullable: true
+      required:
+      - data
+      - message
+    ScopesEnum:
+      enum:
+      - chat:write
+      - conversations:read
+      type: string
+      description: |-
+        * `chat:write` - chat:write
+        * `conversations:read` - conversations:read
+    Source:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        text:
+          type: string
+          maxLength: 100000
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+        revision:
+          type: integer
+          readOnly: true
+        size_bytes:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - error
+      - id
+      - kind
+      - revision
+      - size_bytes
+      - status
+      - title
+    SourceEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/Source'
+          nullable: true
+      required:
+      - data
+      - message
+    SourcePage:
+      type: object
+      properties:
+        message:
+          type: string
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+      required:
+      - count
+      - message
+      - next
+      - previous
+      - results
+    SourceRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        text:
+          type: string
+          maxLength: 100000
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+      required:
+      - kind
+      - title
+    StatusEnum:
+      enum:
+      - queued
+      - processing
+      - ready
+      - failed
+      type: string
+      description: |-
+        * `queued` - queued
+        * `processing` - processing
+        * `ready` - ready
+        * `failed` - failed
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenResult:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+    TokenResultEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/TokenResult'
+          nullable: true
+      required:
+      - data
+      - message
+    Usage:
+      type: object
+      properties:
+        entitlement_id:
+          type: string
+          format: uuid
+        plan:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        paid_through:
+          type: string
+          format: date-time
+        answer_limit:
+          type: integer
+        bot_limit:
+          type: integer
+        successful_answers:
+          type: integer
+        reserved_answers:
+          type: integer
+        provider_attempts:
+          type: integer
+        spent_microusd:
+          type: integer
+        reserved_microusd:
+          type: integer
+        spend_limit_microusd:
+          type: integer
+        billing_mode:
+          type: string
+      required:
+      - answer_limit
+      - billing_mode
+      - bot_limit
+      - entitlement_id
+      - paid_through
+      - plan
+      - provider_attempts
+      - reserved_answers
+      - reserved_microusd
+      - spend_limit_microusd
+      - spent_microusd
+      - starts_at
+      - successful_answers
+    UsageEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/Usage'
+          nullable: true
+      required:
+      - data
+      - message
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+      required:
+      - email
+      - id
+      - username
+    UserEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          nullable: true
+      required:
+      - data
+      - message
+    VisitorCreateRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          format: uri
+          minLength: 1
+      required:
+      - origin
+    VisitorResult:
+      type: object
+      properties:
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - expires_at
+      - token
+    VisitorResultEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          allOf:
+          - $ref: '#/components/schemas/VisitorResult'
+          nullable: true
+      required:
+      - data
+      - message
+  securitySchemes:
+    ServerAPIKey:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: ApiKey <prefix.secret>. Server-side only.
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

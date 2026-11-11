@@ -1,0 +1,6 @@
+{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><title>CAAS local widget example</title></head>
+<body><h1>CAAS widget installation example</h1><p>LOCAL DEMO: no live AI, no real embeddings. Open this page with ?bot=YOUR-BOT-UUID. The bot must allow this page's exact origin.</p>
+<p>No customer API key is included. Widget sessions expire after 15 minutes; reload to start a new session.</p>
+{% if request.GET.bot %}<script src="{% static 'widget/loader.js' %}" data-bot="{{ request.GET.bot }}" defer></script>{% endif %}
+<pre>&lt;script src="https://YOUR-CAAS-HOST/static/widget/loader.js" data-bot="PUBLIC-BOT-UUID" defer&gt;&lt;/script&gt;</pre>
+</body></html>

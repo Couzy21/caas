@@ -1,0 +1,70 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: caas
+      POSTGRES_USER: caas
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5434:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U caas -d caas']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7.4-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    ports:
+      - '127.0.0.1:6381:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://caas:${POSTGRES_PASSWORD:-local-only-change-me}@db:5432/caas
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: 'false'
+    ports:
+      - '127.0.0.1:8000:8000'
+    volumes:
+      - uploads:/app/private_uploads
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+  worker:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://caas:${POSTGRES_PASSWORD:-local-only-change-me}@db:5432/caas
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: 'false'
+    command: ['celery', '-A', 'config', 'worker', '--loglevel=WARNING', '--concurrency=2']
+    volumes:
+      - uploads:/app/private_uploads
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+  beat:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://caas:${POSTGRES_PASSWORD:-local-only-change-me}@db:5432/caas
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: 'false'
+    command: ['celery', '-A', 'config', 'beat', '--loglevel=WARNING', '--schedule=/tmp/celerybeat-schedule']
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
